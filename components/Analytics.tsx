@@ -42,26 +42,30 @@ async function sendAnalytics(type: string, data: AnalyticsData = {}) {
 export function useAnalytics() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const startTime = useRef(Date.now());
-  const maxScroll = useRef(0);
-  const hasTrackedSession = useRef(false);
+  const startTime = useRef<number>(0);
+  const maxScroll = useRef<number>(0);
+  const hasTrackedSession = useRef<boolean>(false);
 
   // Track session start
   useEffect(() => {
-    if (!hasTrackedSession.current) {
+    startTime.current = Date.now();
+    
+    if (!hasTrackedSession.current && typeof window !== 'undefined') {
       hasTrackedSession.current = true;
       
       sendAnalytics('session_start', {
         entryPage: pathname,
-        referrer: typeof window !== 'undefined' ? document.referrer : '',
-        screenWidth: typeof window !== 'undefined' ? window.screen.width : 0,
-        screenHeight: typeof window !== 'undefined' ? window.screen.height : 0
+        referrer: document.referrer || '',
+        screenWidth: window.screen.width,
+        screenHeight: window.screen.height
       });
     }
   }, [pathname]);
 
   // Track page views on route change
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
     const timeOnPage = Math.floor((Date.now() - startTime.current) / 1000);
     
     sendAnalytics('page_view', {
@@ -75,7 +79,7 @@ export function useAnalytics() {
     // Reset for new page
     startTime.current = Date.now();
     maxScroll.current = 0;
-  }, [pathname, searchParams, pathname]);
+  }, [pathname, searchParams]);
 
   const trackClick = useCallback((elementId: string, elementType: string, elementText?: string) => {
     sendAnalytics('click', {
@@ -117,9 +121,11 @@ export function useAnalytics() {
 
 // Hook to track scroll depth
 export function useScrollTracking() {
-  const maxScroll = useRef(0);
+  const maxScroll = useRef<number>(0);
 
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
     const handleScroll = () => {
       const scrollTop = window.scrollY;
       const docHeight = document.documentElement.scrollHeight - window.innerHeight;
