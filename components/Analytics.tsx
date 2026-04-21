@@ -137,22 +137,20 @@ export function useScrollTracking() {
 }
 
 // Automatic click tracking for interactive elements
-export function withClickTracking<P extends object>(
-  Component: React.ComponentType<P>,
+// Usage: const TrackedButton = withClickTracking(Button, 'cta-button', 'button');
+export function withClickTracking(
+  Component: React.ComponentType<{ onClick?: (e: React.MouseEvent) => void }>,
   elementId: string,
   elementType: string
 ) {
-  return function WrappedComponent(props: P) {
+  return function WrappedComponent(props: { onClick?: (e: React.MouseEvent) => void }) {
     const { trackClick } = useAnalytics();
 
     const handleClick = (e: React.MouseEvent) => {
       const target = e.target as HTMLElement;
       const text = target.textContent || target.innerText || '';
       trackClick(elementId, elementType, text);
-      
-      if (props && typeof props === 'object' && 'onClick' in props) {
-        (props as React.MouseEventHandler).onClick?.(e);
-      }
+      props.onClick?.(e);
     };
 
     return <Component {...props} onClick={handleClick} />;
