@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { AnalyticsProvider } from "@/components/AnalyticsProvider";
 
 export const metadata: Metadata = {
   title: "Ciudad Secreta | La ciudad que no ves",
@@ -15,9 +14,7 @@ export default function RootLayout({
   return (
     <html lang="es">
       <body className="antialiased star-field">
-        <AnalyticsProvider>
-          {children}
-        </AnalyticsProvider>
+        {children}
       </body>
     </html>
   );
