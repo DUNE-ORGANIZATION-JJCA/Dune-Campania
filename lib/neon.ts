@@ -1,8 +1,13 @@
 import { neon } from '@neondatabase/serverless';
 
-const sql = neon(process.env.NEON_DATABASE_URL!);
+function getSql() {
+  if (!process.env.NEON_DATABASE_URL) {
+    throw new Error('NEON_DATABASE_URL not set');
+  }
+  return neon(process.env.NEON_DATABASE_URL);
+}
 
-export { sql };
+export { getSql };
 
 export interface Session {
   id: string;
@@ -60,6 +65,7 @@ export interface Click {
 }
 
 export async function createSession(sessionId: string, data: Partial<Session>): Promise<void> {
+  const sql = getSql();
   await sql`
     INSERT INTO sessions (
       session_id, user_agent, ip_hash, country, city,
@@ -75,6 +81,7 @@ export async function createSession(sessionId: string, data: Partial<Session>): 
 }
 
 export async function trackEvent(sessionId: string, event: Partial<Event>): Promise<void> {
+  const sql = getSql();
   await sql`
     INSERT INTO events (
       session_id, event_type, event_category, event_label,
@@ -89,6 +96,7 @@ export async function trackEvent(sessionId: string, event: Partial<Event>): Prom
 }
 
 export async function trackPageView(sessionId: string, pageView: Partial<PageView>): Promise<void> {
+  const sql = getSql();
   await sql`
     INSERT INTO page_views (
       session_id, page_path, page_title, time_on_page_seconds,
@@ -102,6 +110,7 @@ export async function trackPageView(sessionId: string, pageView: Partial<PageVie
 }
 
 export async function trackClick(sessionId: string, click: Partial<Click>): Promise<void> {
+  const sql = getSql();
   await sql`
     INSERT INTO clicks (
       session_id, element_id, element_type, element_text,
@@ -115,6 +124,7 @@ export async function trackClick(sessionId: string, click: Partial<Click>): Prom
 }
 
 export async function getDailyStats(): Promise<unknown> {
+  const sql = getSql();
   const result = await sql`
     SELECT 
       date,

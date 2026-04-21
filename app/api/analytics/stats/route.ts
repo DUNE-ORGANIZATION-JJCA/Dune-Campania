@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { sql } from '@neondatabase/serverless';
+import { neon } from '@neondatabase/serverless';
 
 export async function GET(request: NextRequest) {
   try {
@@ -7,6 +7,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Database not configured' }, { status: 500 });
     }
 
+    const sql = neon(process.env.NEON_DATABASE_URL);
     const { searchParams } = new URL(request.url);
     const period = searchParams.get('period') || '7';
 
