@@ -1,9 +1,11 @@
 'use client';
 
 import Link from "next/link";
+import { AnalyticsProvider } from "@/components/AnalyticsProvider";
 
 export default function Home() {
   return (
+    <AnalyticsProvider>
     <main className="min-h-screen bg-black text-white">
       {/* Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-md border-b border-orange-900/30">
@@ -294,5 +296,6 @@ export default function Home() {
         </div>
       </footer>
     </main>
+    </AnalyticsProvider>
   );
 }

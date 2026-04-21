@@ -27,6 +27,8 @@ interface AnalyticsData {
 const API_URL = '/api/analytics';
 
 async function sendAnalytics(type: string, data: AnalyticsData = {}) {
+  if (typeof window === 'undefined') return;
+  
   try {
     await fetch(API_URL, {
       method: 'POST',
@@ -35,7 +37,7 @@ async function sendAnalytics(type: string, data: AnalyticsData = {}) {
       keepalive: true
     });
   } catch (e) {
-    // Silent fail - no analytics errors in console
+    // Silent fail
   }
 }
 
@@ -48,9 +50,11 @@ export function useAnalytics() {
 
   // Track session start
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
     startTime.current = Date.now();
     
-    if (!hasTrackedSession.current && typeof window !== 'undefined') {
+    if (!hasTrackedSession.current) {
       hasTrackedSession.current = true;
       
       sendAnalytics('session_start', {
@@ -76,12 +80,12 @@ export function useAnalytics() {
       exitPage: false
     });
 
-    // Reset for new page
     startTime.current = Date.now();
     maxScroll.current = 0;
   }, [pathname, searchParams]);
 
   const trackClick = useCallback((elementId: string, elementType: string, elementText?: string) => {
+    if (typeof window === 'undefined') return;
     sendAnalytics('click', {
       elementId,
       elementType,
@@ -91,6 +95,7 @@ export function useAnalytics() {
   }, [pathname]);
 
   const trackCustomEvent = useCallback((eventType: string, category?: string, label?: string, value?: string) => {
+    if (typeof window === 'undefined') return;
     sendAnalytics('custom_event', {
       eventType,
       category,
@@ -101,8 +106,8 @@ export function useAnalytics() {
   }, [pathname]);
 
   const trackExit = useCallback(() => {
+    if (typeof window === 'undefined') return;
     const timeOnPage = Math.floor((Date.now() - startTime.current) / 1000);
-    
     sendAnalytics('page_view', {
       pagePath: pathname,
       pageTitle: document.title,
@@ -140,25 +145,4 @@ export function useScrollTracking() {
   }, []);
 
   return maxScroll;
-}
-
-// Automatic click tracking for interactive elements
-// Usage: const TrackedButton = withClickTracking(Button, 'cta-button', 'button');
-export function withClickTracking(
-  Component: React.ComponentType<{ onClick?: (e: React.MouseEvent) => void }>,
-  elementId: string,
-  elementType: string
-) {
-  return function WrappedComponent(props: { onClick?: (e: React.MouseEvent) => void }) {
-    const { trackClick } = useAnalytics();
-
-    const handleClick = (e: React.MouseEvent) => {
-      const target = e.target as HTMLElement;
-      const text = target.textContent || target.innerText || '';
-      trackClick(elementId, elementType, text);
-      props.onClick?.(e);
-    };
-
-    return <Component {...props} onClick={handleClick} />;
-  };
 }
