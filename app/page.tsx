@@ -18,7 +18,7 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
   };
 
   try {
-    const res = await fetch('/api/leads/create', {
+    const res = await fetch('/api/leads/create/route.ts', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
