@@ -1,10 +1,10 @@
 import { neon } from '@neondatabase/serverless';
-const sql = neon(process.env.NEON_DATABASE_URL!);
+const sql = neon(process.env.DATABASE_URL!);
 export default async function handler(req, res) {
   try {
     // Verificar que la variable existe
-    if (!process.env.NEON_DATABASE_URL) {
-      return res.status(500).json({ error: 'Variable NEON_DATABASE_URL no configurada' });
+    if (!process.env.DATABASE_URL) {
+      return res.status(500).json({ error: 'Variable DATABASE_URL no configurada' });
     }
     
     // Probar conexión simple
