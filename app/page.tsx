@@ -2,8 +2,41 @@
 
 import Link from "next/link";
 import { AnalyticsProvider } from "@/components/AnalyticsProvider";
-
+import { useState } from 'react';
 export default function Home() {
+  const [status, setStatus] = useState('');
+const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  e.preventDefault();
+
+  const formData = new FormData(e.currentTarget);
+
+  const payload = {
+    email: formData.get('email'),
+    consent: formData.get('consent') === 'on',
+    source: 'landing',
+    campaign: 'dune_ciudad_secreta'
+  };
+
+  try {
+    const res = await fetch('/api/leads/create', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+      setStatus('Registro completado');
+      e.currentTarget.reset();
+    } else {
+      setStatus(data.error);
+    }
+
+  } catch {
+    setStatus('Error de conexión');
+  }
+};
   return (
     <AnalyticsProvider>
     <main className="min-h-screen bg-black text-white">
@@ -265,16 +298,32 @@ export default function Home() {
             Únete a la experiencia Ciudad Secreta. Sé el primero en descubrir la ciudad oculta.
           </p>
           
-          <form className="max-w-md mx-auto space-y-4">
-            <input 
-              type="email" 
-              placeholder="Tu email" 
-              className="w-full px-6 py-4 rounded bg-gray-900 border border-orange-900/30 text-white placeholder-gray-500 focus:outline-none focus:border-orange-500"
-            />
-            <button type="submit" className="w-full bg-orange-600 hover:bg-orange-500 text-white px-8 py-4 rounded transition-colors">
-              Apúntate a la lista de espera
-            </button>
-          </form>
+          <form 
+  className="max-w-md mx-auto space-y-4"
+  onSubmit={handleSubmit}
+>
+  <input 
+    name="email"
+    type="email" 
+    placeholder="Tu email" 
+    required
+    className="w-full px-6 py-4 rounded bg-gray-900 border border-orange-900/30 text-white placeholder-gray-500 focus:outline-none focus:border-orange-500"
+  />
+
+  <label className="flex items-center gap-2 text-sm text-gray-400">
+    <input name="consent" type="checkbox" required />
+    Acepto la política de privacidad
+  </label>
+
+  <button 
+    type="submit" 
+    className="w-full bg-orange-600 hover:bg-orange-500 text-white px-8 py-4 rounded transition-colors"
+  >
+    Apúntate a la lista de espera
+  </button>
+
+  <p className="text-sm">{status}</p>
+</form>
         </div>
       </section>
 
@@ -297,5 +346,6 @@ export default function Home() {
       </footer>
     </main>
     </AnalyticsProvider>
+    
   );
 }
