@@ -2,22 +2,23 @@ import { neon } from '@neondatabase/serverless';
 const sql = neon(process.env.NEON_DATABASE_URL!);
 export default async function handler(req, res) {
   try {
-    // Ejemplo: obtener todas las sesiones
-    const sessions = await sql`SELECT * FROM sessions ORDER BY created_at DESC LIMIT 20`;
+    // Verificar que la variable existe
+    if (!process.env.NEON_DATABASE_URL) {
+      return res.status(500).json({ error: 'Variable NEON_DATABASE_URL no configurada' });
+    }
     
-    // Contar eventos
-    const eventCount = await sql`SELECT COUNT(*) as total FROM events`;
-    const pageviewCount = await sql`SELECT COUNT(*) as total FROM page_views`;
+    // Probar conexión simple
+    const result = await sql`SELECT 1 as test`;
     
-    res.status(200).json({
-      sessions: sessions,
-      stats: {
-        total_events: eventCount[0]?.total || 0,
-        total_pageviews: pageviewCount[0]?.total || 0
-      }
+    res.status(200).json({ 
+      message: 'Conexión exitosa',
+      test: result 
     });
   } catch (error) {
-    console.error('Error:', error);
-    res.status(500).json({ error: 'Error conectando a la base de datos' });
+    console.error('Error detallado:', error);
+    res.status(500).json({ 
+      error: 'Error conectando a la base de datos',
+      details: error.message 
+    });
   }
 }
