@@ -1,11 +1,10 @@
 import { neon } from '@neondatabase/serverless';
 
-const sql = neon(process.env.DATABASE_URL!);
-
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
+    const sql = neon(process.env.DATABASE_URL!);
 
+    const body = await request.json();
     const { email, consent, source, campaign } = body;
 
     if (!email) {
