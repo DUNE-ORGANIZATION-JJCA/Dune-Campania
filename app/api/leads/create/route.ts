@@ -18,6 +18,13 @@ export async function POST(request: Request) {
       RETURNING id, email
     `;
 
+    if (result.length === 0) {
+      return Response.json(
+        { error: 'Este email ya está registrado' },
+        { status: 409 }
+      );
+    }
+
     return Response.json({ status: 'ok', result });
 
   } catch (error: any) {
