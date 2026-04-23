@@ -5,9 +5,10 @@ import { AnalyticsProvider } from "@/components/AnalyticsProvider";
 import { useState } from 'react';
 export default function Home() {
   const [status, setStatus] = useState('');
-const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
   e.preventDefault();
 
+  const form = e.currentTarget;
   const formData = new FormData(e.currentTarget);
 
   const payload = {
@@ -18,22 +19,30 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
   };
 
   try {
-    const res = await fetch('/app/api/leads/create/route.ts', {
+    const res = await fetch('/api/leads/create', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     });
 
-    const data = await res.json();
-
-    if (res.ok) {
-      setStatus('Registro completado');
-      e.currentTarget.reset();
-    } else {
-      setStatus(data.error);
+    let data;
+    try {
+      data = await res.json();
+    } catch {
+      data = {};
     }
 
-  } catch {
+    if (!res.ok) {
+      console.error('API ERROR:', data); 
+      setStatus(data.error || 'Error en servidor');
+      return;
+    }
+
+    setStatus('Registro completado');
+    form.reset();
+
+  } catch (err){
+    console.error('FETCH ERROR:', err);
     setStatus('Error de conexión');
   }
 };
